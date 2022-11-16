@@ -1,4 +1,8 @@
 import { useRouter } from 'next/router'
+import Link from 'next/link'
+
+import { server } from '../../config/index'
+
 import styles from '../../styles/Article.module.css'
 
 function ArticleDetails({ article, comments }) {
@@ -9,6 +13,7 @@ function ArticleDetails({ article, comments }) {
   }
   return (
     <div>
+      <Link href="/articles">Go Back</Link>
       <h2>{article.title}</h2>
       <p>{article.body}</p>
       <div>
@@ -28,21 +33,21 @@ function ArticleDetails({ article, comments }) {
 export default ArticleDetails
 
 export const getStaticPaths = async () => {
-  const res = await fetch(`https://jsonplaceholder.typicode.com/posts?_limit=6`)
+  const res = await fetch(`${server}/api/articles`)
   const articles = await res.json()
 
+  const params = articles.map((article) => ({
+    params: { id: article.id.toString() },
+  }))
+
   return {
-    paths: articles.map((article) => ({
-      params: { id: article.id.toString() },
-    })),
+    paths: params,
     fallback: true,
   }
 }
 
 export const getStaticProps = async ({ params }) => {
-  const articleRes = await fetch(
-    `https://jsonplaceholder.typicode.com/posts/${params.id}`
-  )
+  const articleRes = await fetch(`${server}/api/articles/${params.id}`)
   const commentsRes = await fetch(
     `https://jsonplaceholder.typicode.com/posts/${params.id}/comments`
   )
@@ -57,3 +62,37 @@ export const getStaticProps = async ({ params }) => {
     },
   }
 }
+
+// The below are data fetching methods:
+// export const getStaticPaths = async () => {
+//   const res = await fetch(`https://jsonplaceholder.typicode.com/posts`)
+//   const articles = await res.json()
+
+//   const params = articles.map((article) => ({
+//     params: { id: article.id.toString() },
+//   }))
+
+//   return {
+//     paths: params,
+//     fallback: true,
+//   }
+// }
+
+// export const getStaticProps = async ({ params }) => {
+//   const articleRes = await fetch(
+//     `https://jsonplaceholder.typicode.com/posts/${params.id}`
+//   )
+//   const commentsRes = await fetch(
+//     `https://jsonplaceholder.typicode.com/posts/${params.id}/comments`
+//   )
+
+//   const article = await articleRes.json()
+//   const comments = await commentsRes.json()
+
+//   return {
+//     props: {
+//       article,
+//       comments,
+//     },
+//   }
+// }
